@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "installByDefault": true,
+  "presentation": {
+    "displayName": "PDF Skill",
+    "role": "PDF 处理",
+    "intro": "读取、创建和审阅 PDF，强调渲染检查、版式 fidelity 和可交付质量。",
+    "examples": [
+      "帮我检查这个 PDF 的排版",
+      "把这份内容做成 PDF",
+      "从 PDF 中提取表格并核对渲染效果"
+    ],
+    "tags": [
+      "OpenAI",
+      "PDF",
+      "文档处理",
+      "版式检查",
+      "报告生成"
+    ]
+  },
+  "organization": {
+    "companies": [
+      {
+        "id": "bigapple",
+        "label": "我的一人公司",
+        "order": 0
+      }
+    ],
+    "departments": [
+      {
+        "id": "openai-official",
+        "label": "OpenAI 官方",
+        "order": 0
+      }
+    ]
+  },
+  "lineage": {
+    "rootSkillId": "openai-pdf-skill"
+  },
+  "publish": {
+    "skillId": "openai-pdf-skill",
+    "publishedBundleHash": "116190d94b04b1fb75a66990e0530ef0811fb095",
+    "publishedDirectoryHash": "8eb22906d8a7be912e718c595690b99294799646",
+    "publisherId": "pub_98d022cd-6d98-41ac-9cc1-aeab3e4f9fc8",
+    "publishedAt": "2026-04-01T12:36:07.112Z",
+    "updatedAt": "2026-04-02T13:38:23.400Z",
+    "submittedAt": "2026-04-02T13:38:23.400Z",
+    "reviewStatus": "approved"
+  }
+}

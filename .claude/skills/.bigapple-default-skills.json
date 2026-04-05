@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "installedAt": "2026-04-05T08:54:37.976Z",
+  "installedSkillIds": [
+    "bigapple-skill-converter",
+    "openai-pdf-skill",
+    "spreadsheet"
+  ]
+}

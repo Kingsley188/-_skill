@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "installByDefault": true,
+  "presentation": {
+    "displayName": "技能上架助手",
+    "role": "Skill 转换",
+    "intro": "把现有 Claude skill 整理成可在 BigApple 发布的项目 skill。它会校验 skill 目录、复制到当前工作区的 .claude/skills，并补齐 bigapple.json 的展示字段。整理完成后，还会引导你在 BigApple UI 里完成发布和验收。",
+    "examples": [
+      "把这个 Claude skill 整理成 BigApple 可发布的 skill",
+      "帮我检查这个 skill 目录能不能上架",
+      "把这个 skill 复制到当前工作区并补齐 bigapple.json",
+      "帮我准备好发布，然后告诉我怎么在 BigApple 里验收"
+    ],
+    "tags": [
+      "BigApple",
+      "Claude skill",
+      "技能上架",
+      "bigapple.json",
+      "发布验收"
+    ]
+  },
+  "organization": {
+    "companies": [
+      {
+        "id": "bigapple",
+        "label": "我的一人公司",
+        "order": 0
+      }
+    ],
+    "departments": [
+      {
+        "id": "bigapple-官方",
+        "label": "BigApple 官方",
+        "order": 90
+      }
+    ]
+  },
+  "lineage": {
+    "rootSkillId": "bigapple-skill-converter"
+  },
+  "publish": {
+    "skillId": "bigapple-skill-converter",
+    "publishedBundleHash": "6fffc3510783eedc072599b6cc7ecfe37056b423",
+    "publishedDirectoryHash": "34887d992e877fcab712252935fe2417215aef98",
+    "publisherId": "pub_98d022cd-6d98-41ac-9cc1-aeab3e4f9fc8",
+    "publishedAt": "2026-04-02T12:31:25.485Z",
+    "updatedAt": "2026-04-02T17:17:41.873Z",
+    "submittedAt": "2026-04-02T17:17:41.873Z",
+    "reviewStatus": "approved"
+  }
+}

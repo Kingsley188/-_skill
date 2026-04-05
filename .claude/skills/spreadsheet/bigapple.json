@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "installByDefault": true,
+  "presentation": {
+    "displayName": "Excel/xlsx大师",
+    "role": "表格处理",
+    "intro": "创建、编辑和分析表格文件，适合 xlsx、csv、tsv 的公式、格式和数据处理。",
+    "examples": [
+      "帮我分析这个 Excel",
+      "生成一个带公式的表格",
+      "整理这份 CSV 并输出汇总结果"
+    ],
+    "tags": [
+      "OpenAI",
+      "Spreadsheet",
+      "Excel",
+      "数据分析",
+      "表格处理"
+    ]
+  },
+  "organization": {
+    "companies": [
+      {
+        "id": "bigapple",
+        "label": "我的一人公司",
+        "order": 0
+      }
+    ],
+    "departments": [
+      {
+        "id": "openai-official",
+        "label": "OpenAI 官方",
+        "order": 0
+      }
+    ]
+  },
+  "lineage": {
+    "rootSkillId": "spreadsheet"
+  },
+  "publish": {
+    "skillId": "spreadsheet",
+    "publishedBundleHash": "e951ee57d36f31b6fce6b42a0e44bca44e33cafa",
+    "publishedDirectoryHash": "412b630ea57ac56e550f98aeeeaf05efef976e13",
+    "publisherId": "pub_98d022cd-6d98-41ac-9cc1-aeab3e4f9fc8",
+    "publishedAt": "2026-04-01T12:36:07.891Z",
+    "updatedAt": "2026-04-02T14:51:43.382Z",
+    "submittedAt": "2026-04-02T14:51:43.382Z",
+    "reviewStatus": "approved"
+  }
+}
