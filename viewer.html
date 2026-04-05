@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报销文件视图</title>
+    <style>
+        :root {
+            --bg: #f2f2f4;
+            --surface: #ffffff;
+            --surface-soft: #f7f7f8;
+            --line: rgba(60, 60, 67, 0.14);
+            --line-strong: rgba(60, 60, 67, 0.22);
+            --text: #1f2024;
+            --muted: #6a6c73;
+            --blue: #0a63ff;
+            --blue-soft: rgba(10, 99, 255, 0.08);
+            --green: #157347;
+            --green-soft: rgba(21, 115, 71, 0.10);
+            --orange: #a36200;
+            --orange-soft: rgba(163, 98, 0, 0.12);
+            --red: #b03b30;
+            --red-soft: rgba(176, 59, 48, 0.10);
+            --font: "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            min-height: 100vh;
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        .page {
+            min-height: 100vh;
+        }
+
+        .topbar {
+            align-items: flex-start;
+            background: rgba(248, 248, 249, 0.92);
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            gap: 14px;
+            justify-content: space-between;
+            padding: 14px 18px 12px;
+        }
+
+        .title-wrap h1 {
+            font-size: 1.42rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .title-wrap p {
+            color: var(--muted);
+            font-size: 0.86rem;
+            margin-top: 3px;
+        }
+
+        .toolbar-actions {
+            align-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-left: auto;
+        }
+
+        .search-box {
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            display: inline-flex;
+            gap: 7px;
+            padding: 6px 10px;
+        }
+
+        .search-box span {
+            color: var(--muted);
+            flex: 0 0 auto;
+            font-size: 0.84rem;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 0.9rem;
+            min-width: 0;
+            outline: none;
+        }
+
+        .search-box {
+            min-width: 245px;
+        }
+
+        .search-box input {
+            width: 100%;
+        }
+
+        .icon-button {
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            color: var(--muted);
+            cursor: pointer;
+            display: inline-flex;
+            font: inherit;
+            font-size: 1.2rem;
+            height: 38px;
+            justify-content: center;
+            min-width: 38px;
+            padding: 0 10px;
+        }
+
+        .icon-button:hover {
+            background: var(--surface-soft);
+        }
+
+        .more-menu {
+            position: relative;
+        }
+
+        .more-menu summary {
+            list-style: none;
+        }
+
+        .more-menu summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .menu-dropdown {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+            min-width: 126px;
+            padding: 6px;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            z-index: 20;
+        }
+
+        .menu-item {
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text);
+            cursor: pointer;
+            font: inherit;
+            padding: 8px 10px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .menu-item:hover {
+            background: var(--surface-soft);
+        }
+
+        #databaseFile {
+            display: none;
+        }
+
+        .content {
+            padding: 10px 16px 16px;
+        }
+
+        .groupbar {
+            padding: 10px 16px 0;
+        }
+
+        .group-switch {
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            display: inline-flex;
+            gap: 4px;
+            padding: 4px;
+        }
+
+        .group-button {
+            background: transparent;
+            border: none;
+            border-radius: 999px;
+            color: var(--muted);
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            white-space: nowrap;
+        }
+
+        .group-button.is-active {
+            background: var(--surface-soft);
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .table-shell {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            max-height: calc(100vh - 140px);
+            overflow: auto;
+        }
+
+        .table-header,
+        .table-row {
+            align-items: start;
+            display: grid;
+            gap: 8px;
+            grid-template-columns:
+                minmax(140px, 0.95fr)
+                56px
+                minmax(165px, 1.05fr)
+                minmax(92px, 0.62fr)
+                minmax(175px, 1.1fr)
+                minmax(124px, 0.8fr)
+                minmax(64px, 0.44fr)
+                minmax(74px, 0.5fr)
+                minmax(84px, 0.58fr);
+            min-width: 1120px;
+            padding: 0 12px;
+        }
+
+        .table-header {
+            background: var(--surface-soft);
+            border-bottom: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 0.73rem;
+            font-weight: 600;
+            min-height: 34px;
+            padding-top: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 6;
+        }
+
+        .table-body {
+            overflow: visible;
+        }
+
+        .group-section + .group-section {
+            border-top: 1px solid rgba(60, 60, 67, 0.08);
+        }
+
+        .group-label {
+            align-items: center;
+            background: rgba(60, 60, 67, 0.03);
+            border-bottom: 1px solid rgba(60, 60, 67, 0.08);
+            color: var(--text);
+            display: flex;
+            flex-wrap: wrap;
+            font-size: 0.82rem;
+            font-weight: 600;
+            gap: 8px;
+            min-height: 34px;
+            padding: 0 12px;
+        }
+
+        .group-title {
+            white-space: nowrap;
+        }
+
+        .group-warning {
+            color: var(--orange);
+            display: inline-flex;
+            font-size: 0.75rem;
+            font-weight: 500;
+            gap: 4px;
+            min-width: 0;
+            overflow: visible;
+            position: relative;
+        }
+
+        .group-amounts {
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid rgba(60, 60, 67, 0.12);
+            border-radius: 999px;
+            color: var(--muted);
+            display: inline-flex;
+            font-size: 0.74rem;
+            font-weight: 500;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        .group-amount {
+            display: inline-flex;
+            gap: 4px;
+            padding: 3px 8px;
+            white-space: nowrap;
+        }
+
+        .group-amount + .group-amount {
+            border-left: 1px solid rgba(60, 60, 67, 0.12);
+        }
+
+        .group-amount.is-mismatch {
+            color: var(--orange);
+            font-weight: 600;
+        }
+
+        .group-warning-text {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .warning-popover {
+            display: inline-flex;
+            flex: 0 0 auto;
+            position: relative;
+        }
+
+        .warning-info {
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid rgba(163, 98, 0, 0.28);
+            border-radius: 999px;
+            color: var(--orange);
+            cursor: help;
+            display: inline-flex;
+            flex: 0 0 auto;
+            font-size: 0.66rem;
+            font-weight: 700;
+            height: 16px;
+            justify-content: center;
+            padding: 0;
+            text-align: center;
+            width: 16px;
+        }
+
+        .warning-tooltip {
+            background: var(--surface);
+            border: 1px solid var(--line-strong);
+            border-radius: 10px;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+            color: var(--text);
+            display: none;
+            font-size: 0.74rem;
+            font-weight: 500;
+            left: 0;
+            line-height: 1.5;
+            max-width: min(420px, 70vw);
+            min-width: 220px;
+            padding: 10px 12px;
+            position: absolute;
+            top: calc(100% + 6px);
+            white-space: pre-line;
+            z-index: 30;
+        }
+
+        .warning-popover:hover .warning-tooltip,
+        .warning-popover:focus-within .warning-tooltip {
+            display: block;
+        }
+
+        .table-row {
+            border-bottom: 1px solid rgba(60, 60, 67, 0.08);
+            min-height: 40px;
+            padding-bottom: 5px;
+            padding-top: 5px;
+            transition: background 0.15s ease;
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-row:hover {
+            background: rgba(10, 99, 255, 0.035);
+        }
+
+        .cell {
+            min-width: 0;
+        }
+
+        .text-cell {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            word-break: break-word;
+        }
+
+        .name-cell {
+            min-width: 0;
+        }
+
+        .file-icon {
+            align-items: center;
+            background: var(--surface-soft);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            color: var(--muted);
+            display: inline-flex;
+            flex: 0 0 auto;
+            font-size: 0.68rem;
+            font-weight: 700;
+            height: 26px;
+            justify-content: center;
+            width: 26px;
+        }
+
+        .preview-cell {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+            min-height: 100%;
+        }
+
+        .preview-link {
+            align-items: center;
+            display: inline-flex;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .preview-thumb {
+            background: var(--surface-soft);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            display: block;
+            height: 28px;
+            object-fit: cover;
+            width: 28px;
+        }
+
+        .file-icon.pdf {
+            color: var(--red);
+        }
+
+        .file-icon.image {
+            color: #0d8b69;
+        }
+
+        .file-main {
+            min-width: 0;
+        }
+
+        .file-name {
+            color: var(--text);
+            display: block;
+            font-size: 0.94rem;
+            font-weight: 600;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .metric-cell {
+            color: var(--muted);
+            font-size: 0.72rem;
+            white-space: nowrap;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .empty-state {
+            align-items: center;
+            color: var(--muted);
+            display: flex;
+            justify-content: center;
+            min-height: 280px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        @media (max-width: 980px) {
+            .topbar {
+                flex-direction: column;
+            }
+
+            .toolbar-actions {
+                justify-content: flex-start;
+                width: 100%;
+            }
+
+            .search-box {
+                min-width: 0;
+                width: 100%;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .groupbar {
+                padding: 10px 16px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="topbar">
+            <div class="title-wrap">
+                <h1 id="projectTitle">报销文件视图</h1>
+                <p id="projectMeta">等待加载数据</p>
+            </div>
+            <div class="toolbar-actions">
+                <label class="search-box">
+                    <span>搜索</span>
+                    <input type="search" id="searchInput" placeholder="按文件名称、类型、关联报销单搜索">
+                </label>
+                <details class="more-menu" id="moreMenu">
+                    <summary class="icon-button" title="更多功能" aria-label="更多功能">⋯</summary>
+                    <div class="menu-dropdown">
+                        <button class="menu-item" id="openDatabaseButton" type="button">打开数据库</button>
+                    </div>
+                </details>
+                <input type="file" id="databaseFile" accept=".js">
+            </div>
+        </header>
+
+        <div class="groupbar">
+            <div class="group-switch" id="groupSwitch"></div>
+        </div>
+
+        <main class="content">
+            <section class="table-shell">
+                <div class="table-header" id="tableHeader"></div>
+                <div class="table-body" id="filesTable"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="./data.js"></script>
+    <script>
+        const FILE_KIND_OPTIONS = [
+            { value: "invoice_pdf", label: "发票 PDF" },
+            { value: "receipt_image", label: "小票图片" },
+            { value: "product_image", label: "商品图" },
+            { value: "order_screenshot", label: "订单截图" },
+            { value: "payment_screenshot", label: "支付截图" },
+            { value: "chat_screenshot", label: "聊天截图" },
+            { value: "contract_pdf", label: "合同 PDF" },
+            { value: "other", label: "其他" }
+        ];
+
+        const GROUP_OPTIONS = [
+            { value: "none", label: "不分组" },
+            { value: "linked_expense", label: "按关联报销单" }
+        ];
+
+        const VIEW_SORT_CONFIG = {
+            none: "source_index",
+            linked_expense: "kind"
+        };
+
+        const FILE_FIELD_DEFS = [
+            { key: "original_names", label: "原文件名", type: "string_array", source: "derived" },
+            { key: "preview", label: "预览", type: "preview", source: "derived" },
+            { key: "current_file_name", label: "当前文件名", type: "text", source: "derived" },
+            { key: "kind", label: "识别类型", type: "kind_text", source: "files" },
+            { key: "recognition_summary", label: "识别摘要", type: "text", source: "derived" },
+            { key: "linked_expenses", label: "关联报销单", type: "reference_array", source: "derived" },
+            { key: "line_quantity", label: "数量", type: "metric_text", source: "derived" },
+            { key: "line_unit_price", label: "单价", type: "metric_money", source: "derived" },
+            { key: "line_amount", label: "合计", type: "metric_money", source: "derived" }
+        ];
+
+        const state = {
+            data: null,
+            sourceLabel: "等待加载",
+            search: "",
+            groupMode: "linked_expense"
+        };
+
+        document.getElementById("searchInput").addEventListener("input", event => {
+            state.search = event.target.value.trim().toLowerCase();
+            render();
+        });
+
+        document.getElementById("openDatabaseButton").addEventListener("click", () => {
+            document.getElementById("moreMenu")?.removeAttribute("open");
+            document.getElementById("databaseFile").click();
+        });
+
+        document.getElementById("groupSwitch").addEventListener("click", event => {
+            const button = event.target.closest("[data-group-mode]");
+            if (!button) return;
+            const nextMode = button.dataset.groupMode;
+            if (!nextMode || nextMode === state.groupMode) return;
+            state.groupMode = nextMode;
+            render();
+        });
+
+        document.getElementById("databaseFile").addEventListener("change", event => {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = loadEvent => {
+                try {
+                    const data = parseDatabaseText(loadEvent.target.result);
+                    loadData(data, `手动打开 ${file.name}`);
+                } catch (error) {
+                    renderError(`数据库解析失败：${error.message}`);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = "";
+        });
+
+        function safeText(value) {
+            if (value === null || value === undefined || value === "") return "—";
+            return String(value);
+        }
+
+        function isFiniteNumber(value) {
+            return typeof value === "number" && Number.isFinite(value);
+        }
+
+        function escapeHtml(value) {
+            return safeText(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("\"", "&quot;")
+                .replaceAll("'", "&#39;");
+        }
+
+        function getByPath(object, path) {
+            return path.split(".").reduce((current, part) => current?.[part], object);
+        }
+
+        function parseDatabaseText(text) {
+            const source = String(text || "").trim();
+            const match = source.match(/^window\.REIMBURSEMENT_DB\s*=\s*([\s\S]*?)\s*;\s*$/);
+            if (!match) {
+                throw new Error("文件格式不正确，应为 data.js");
+            }
+            return JSON.parse(match[1]);
+        }
+
+        function validateDataShape(data) {
+            return data &&
+                data.schema_version === "reimbursement.v3" &&
+                Array.isArray(data.files) &&
+                Array.isArray(data.expenses);
+        }
+
+        function kindLabel(value) {
+            return FILE_KIND_OPTIONS.find(option => option.value === value)?.label || value;
+        }
+
+        function isImageFile(file) {
+            const mime = file?.locator?.mime_type || "";
+            const path = file?.locator?.relative_path || "";
+            return mime.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(path);
+        }
+
+        function isPdfFile(file) {
+            const mime = file?.locator?.mime_type || "";
+            const path = file?.locator?.relative_path || "";
+            return mime === "application/pdf" || /\.pdf$/i.test(path);
+        }
+
+        function fileIconClass(file) {
+            if (isPdfFile(file)) return "pdf";
+            if (isImageFile(file)) return "image";
+            return "";
+        }
+
+        function fileIconText(file) {
+            if (isPdfFile(file)) return "PDF";
+            if (isImageFile(file)) return "IMG";
+            return "FILE";
+        }
+
+        function buildRelations() {
+            const fileToExpenses = new Map();
+            state.data.expenses.forEach(expense => {
+                (expense.file_ids || []).forEach(fileId => {
+                    if (!fileToExpenses.has(fileId)) fileToExpenses.set(fileId, []);
+                    fileToExpenses.get(fileId).push(expense);
+                });
+            });
+            return { fileToExpenses };
+        }
+
+        function buildRecognitionSummary(file) {
+            return file.recognition?.summary || "—";
+        }
+
+        function formatMoney(value) {
+            return isFiniteNumber(value) ? `¥${value.toFixed(2)}` : "—";
+        }
+
+        function basename(pathValue) {
+            if (!pathValue) return "";
+            return String(pathValue).split(/[\\/]/).filter(Boolean).pop() || String(pathValue);
+        }
+
+        function uniqueStrings(values) {
+            return [...new Set(values.filter(Boolean).map(value => String(value)))];
+        }
+
+        function buildOriginalNames(file) {
+            const names = Array.isArray(getByPath(file, "locator.previous_names")) ? getByPath(file, "locator.previous_names") : [];
+            return uniqueStrings(names);
+        }
+
+        function getFilesByIds(fileIds) {
+            const files = state.data?.files || [];
+            const fileById = new Map(files.map(file => [file.id, file]));
+            return (fileIds || []).map(fileId => fileById.get(fileId)).filter(Boolean);
+        }
+
+        function normalizeName(value) {
+            return String(value || "").trim();
+        }
+
+        function findMatchedLineItem(file, expense) {
+            if (!expense || !Array.isArray(expense.line_items) || !expense.line_items.length) return null;
+            if (expense.line_items.length === 1) return expense.line_items[0];
+            if (file.kind !== "product_image") return null;
+
+            const candidates = [file.recognition?.summary]
+                .filter(Boolean)
+                .map(normalizeName);
+
+            return expense.line_items.find(item => candidates.includes(normalizeName(item.name))) || null;
+        }
+
+        function buildLineMetrics(file, primaryExpense) {
+            if (!primaryExpense) {
+                return { quantity: null, unitPrice: null, amount: null };
+            }
+
+            const lineItem = findMatchedLineItem(file, primaryExpense);
+            const fallbackLine = primaryExpense.line_items?.length === 1 ? primaryExpense.line_items[0] : null;
+            const source = lineItem || fallbackLine || null;
+
+            return {
+                quantity: source?.quantity ?? null,
+                unitPrice: source?.unit_price ?? null,
+                amount: source?.amount ?? primaryExpense.amount?.value ?? null
+            };
+        }
+
+        function deriveInvoiceAmount(expense) {
+            const amount = expense?.amount?.value;
+            return isFiniteNumber(amount) ? amount : null;
+        }
+
+        function deriveEvidenceAmount(expense) {
+            const amounts = (expense?.line_items || [])
+                .map(item => item.amount)
+                .filter(isFiniteNumber);
+            if (!amounts.length) return null;
+            return Number(amounts.reduce((sum, value) => sum + value, 0).toFixed(2));
+        }
+
+        function buildGroupAmountsHtml(expense) {
+            if (!expense) return "";
+
+            const invoiceAmount = deriveInvoiceAmount(expense);
+            const evidenceAmount = deriveEvidenceAmount(expense);
+            if (invoiceAmount === null && evidenceAmount === null) return "";
+
+            const mismatch = invoiceAmount !== null && evidenceAmount !== null && Math.abs(invoiceAmount - evidenceAmount) > 0.009;
+            return `
+                <span class="group-amounts">
+                    <span class="group-amount"><span>发票金额</span><span>${escapeHtml(formatMoney(invoiceAmount))}</span></span>
+                    <span class="group-amount ${mismatch ? "is-mismatch" : ""}"><span>证据金额</span><span>${escapeHtml(formatMoney(evidenceAmount))}</span></span>
+                </span>
+            `;
+        }
+
+        function buildWarningInfoText(expense) {
+            const lines = [];
+            const itemNames = (expense?.line_items || []).map(item => item.name).filter(Boolean);
+            const sourceFiles = uniqueStrings(
+                getFilesByIds(expense?.file_ids)
+                    .filter(file => ["invoice_pdf", "receipt_image"].includes(file.kind))
+                    .map(file => basename(file.locator?.relative_path))
+            );
+
+            if (itemNames.length) {
+                lines.push(`这 ${itemNames.length} 项分别是：`);
+                itemNames.forEach((itemName, index) => {
+                    lines.push(`${index + 1}. ${itemName}`);
+                });
+            }
+
+            if (sourceFiles.length) {
+                lines.push(`参考文件：`);
+                sourceFiles.forEach((fileName, index) => {
+                    lines.push(`${index + 1}. ${fileName}`);
+                });
+            }
+
+            return lines.join("\n");
+        }
+
+        function extractExpenseWarnings(expense) {
+            const lineItemCount = Array.isArray(expense?.line_items) ? expense.line_items.filter(item => item?.name).length : 0;
+            const productImageCount = getFilesByIds(expense?.file_ids)
+                .filter(file => file.kind === "product_image")
+                .length;
+
+            if (!lineItemCount || productImageCount >= lineItemCount) {
+                return [];
+            }
+
+            return [{
+                message: `商品明细 ${lineItemCount} 项，仅关联 ${productImageCount} 张商品图`,
+                infoText: buildWarningInfoText(expense)
+            }];
+        }
+
+        function kindOrder(value) {
+            const index = FILE_KIND_OPTIONS.findIndex(option => option.value === value);
+            return index === -1 ? FILE_KIND_OPTIONS.length : index;
+        }
+
+        function sortValue(row, sortKey) {
+            if (sortKey === "source_index") return row.sourceIndex;
+            if (sortKey === "kind") return kindOrder(row.values.kind);
+            return row.sourceIndex;
+        }
+
+        function compareRows(left, right, sortKey) {
+            const leftValue = sortValue(left, sortKey);
+            const rightValue = sortValue(right, sortKey);
+
+            if (typeof leftValue === "number" && typeof rightValue === "number") {
+                if (leftValue !== rightValue) return leftValue - rightValue;
+                return left.sourceIndex - right.sourceIndex;
+            }
+
+            const compared = String(leftValue).localeCompare(String(rightValue), "zh-CN", {
+                numeric: true,
+                sensitivity: "base"
+            });
+            if (compared !== 0) return compared;
+            return left.sourceIndex - right.sourceIndex;
+        }
+
+        function sortGroups(groups) {
+            const sortKey = VIEW_SORT_CONFIG[state.groupMode] || "source_index";
+            return groups.map(group => ({
+                ...group,
+                rows: [...group.rows].sort((left, right) => compareRows(left, right, sortKey))
+            }));
+        }
+
+        function buildGroups(rows) {
+            if (state.groupMode === "linked_expense") {
+                const orderedGroups = [];
+                const groupsByKey = new Map();
+                const assignedRowIndexes = new Set();
+
+                function ensureGroup(key, label, warnings = []) {
+                    if (!groupsByKey.has(key)) {
+                        const group = { key, label, rows: [], warnings, expense: null };
+                        groupsByKey.set(key, group);
+                        orderedGroups.push(group);
+                    }
+                    return groupsByKey.get(key);
+                }
+
+                state.data.expenses.forEach(expense => {
+                    const group = ensureGroup(`expense:${expense.id}`, expense.title || expense.id, extractExpenseWarnings(expense));
+                    group.expense = expense;
+                });
+                ensureGroup("unlinked", "未关联报销单", []);
+
+                rows.forEach(row => {
+                    const linkedExpenses = row.values.linked_expenses || [];
+                    if (!linkedExpenses.length) {
+                        ensureGroup("unlinked", "未关联报销单").rows.push(row);
+                        assignedRowIndexes.add(row.sourceIndex);
+                        return;
+                    }
+                    linkedExpenses.forEach(expenseRef => {
+                        ensureGroup(`expense:${expenseRef.id}`, expenseRef.label).rows.push(row);
+                        assignedRowIndexes.add(row.sourceIndex);
+                    });
+                });
+
+                rows.forEach(row => {
+                    if (!assignedRowIndexes.has(row.sourceIndex)) {
+                        ensureGroup("unlinked", "未关联报销单").rows.push(row);
+                        assignedRowIndexes.add(row.sourceIndex);
+                    }
+                });
+
+                return orderedGroups.filter(group => group.rows.length > 0);
+            }
+
+            return [{
+                key: "all",
+                label: "全部文件",
+                warnings: [],
+                rows
+            }];
+        }
+
+        function buildRowModel(file, relations, sourceIndex) {
+            const relativePath = getByPath(file, "locator.relative_path");
+            const currentFileName = basename(relativePath) || "—";
+            const linkedExpenses = (relations.fileToExpenses.get(file.id) || []).map(expense => ({
+                id: expense.id,
+                label: expense.title,
+                expense
+            }));
+            const lineMetrics = buildLineMetrics(file, linkedExpenses[0]?.expense || null);
+            return {
+                sourceIndex,
+                file,
+                values: {
+                    "original_names": buildOriginalNames(file),
+                    "preview": relativePath,
+                    "current_file_name": currentFileName,
+                    "kind": file.kind,
+                    "linked_expenses": linkedExpenses,
+                    "recognition_summary": buildRecognitionSummary(file),
+                    "line_quantity": lineMetrics.quantity ?? "",
+                    "line_unit_price": lineMetrics.unitPrice,
+                    "line_amount": lineMetrics.amount
+                }
+            };
+        }
+
+        function renderError(message) {
+            document.getElementById("projectTitle").textContent = "报销文件视图";
+            document.getElementById("projectMeta").textContent = message;
+            document.getElementById("tableHeader").innerHTML = "";
+            document.getElementById("filesTable").innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
+        }
+
+        function loadData(data, sourceLabel) {
+            if (!validateDataShape(data)) {
+                renderError("当前文件不是最新数据库结构。");
+                return;
+            }
+
+            state.data = data;
+            state.sourceLabel = sourceLabel;
+            state.search = "";
+            document.getElementById("searchInput").value = "";
+            render();
+        }
+
+        function render() {
+            if (!state.data) {
+                renderError("优先读取 data.js，或者手动打开数据库文件。");
+                return;
+            }
+
+            const relations = buildRelations();
+            const rows = state.data.files
+                .map((file, sourceIndex) => buildRowModel(file, relations, sourceIndex))
+                .filter(row => {
+                    const haystack = [
+                        row.values.current_file_name,
+                        row.values.original_names.join(" "),
+                        kindLabel(row.values.kind),
+                        row.values.linked_expenses.map(item => item.label).join(" "),
+                        row.values.recognition_summary
+                    ].join(" ").toLowerCase();
+                    return !state.search || haystack.includes(state.search);
+                });
+            const groups = sortGroups(buildGroups(rows));
+
+            document.getElementById("projectTitle").textContent = state.data.project?.name || "报销文件视图";
+            document.getElementById("projectMeta").textContent =
+                `${state.sourceLabel} · ${state.data.files.length} 个文件 · ${state.data.expenses.length} 笔报销`;
+
+            renderGroupSwitch();
+            renderTableHeader(rows.length);
+
+            const table = document.getElementById("filesTable");
+            if (!groups.length || !rows.length) {
+                table.innerHTML = `<div class="empty-state">没有符合当前搜索条件的文件。</div>`;
+                return;
+            }
+
+            table.innerHTML = groups.map(group => `
+                <section class="group-section">
+                    ${state.groupMode === "none" ? "" : `
+                        <div class="group-label">
+                            <span class="group-title">${escapeHtml(`${group.label}(${group.rows.length})`)}</span>
+                            ${buildGroupAmountsHtml(group.expense)}
+                            ${group.warnings && group.warnings.length ? `
+                                ${group.warnings.map(warning => `
+                                    <span class="group-warning">
+                                        <span class="group-warning-text">${escapeHtml(warning.message)}</span>
+                                        ${warning.infoText ? `
+                                            <span class="warning-popover">
+                                                <button class="warning-info" type="button" aria-label="查看预警说明">i</button>
+                                                <span class="warning-tooltip">${escapeHtml(warning.infoText)}</span>
+                                            </span>
+                                        ` : ""}
+                                    </span>
+                                `).join(" · ")}
+                            ` : ""}
+                        </div>
+                    `}
+                    ${group.rows.map((row, index) => `
+                        <div class="table-row">
+                            ${FILE_FIELD_DEFS.map(definition => renderCell(definition, row, index)).join("")}
+                        </div>
+                    `).join("")}
+                </section>
+            `).join("");
+
+        }
+
+        function renderGroupSwitch() {
+            document.getElementById("groupSwitch").innerHTML = GROUP_OPTIONS.map(option => `
+                <button
+                    class="group-button ${option.value === state.groupMode ? "is-active" : ""}"
+                    data-group-mode="${escapeHtml(option.value)}"
+                    type="button"
+                >
+                    ${escapeHtml(option.label)}
+                </button>
+            `).join("");
+        }
+
+        function renderTableHeader(rowCount) {
+            document.getElementById("tableHeader").innerHTML = FILE_FIELD_DEFS
+                .map(definition => {
+                    const label = definition.key === "original_names"
+                        ? `原文件名(${rowCount}文件)`
+                        : definition.label;
+                    return `<span>${escapeHtml(label)}</span>`;
+                })
+                .join("");
+        }
+
+        function renderCell(definition, row, rowIndex) {
+            const value = row.values[definition.key];
+
+            if (definition.type === "preview") {
+                const href = getByPath(row.file, "locator.relative_path") || "#";
+                if (isImageFile(row.file)) {
+                    return `
+                        <div class="cell preview-cell">
+                            <a class="preview-link" href="${escapeHtml(href)}" target="_blank" rel="noreferrer" title="打开文件">
+                                <img class="preview-thumb" src="${escapeHtml(href)}" alt="${escapeHtml(safeText(row.values.current_file_name))}" loading="lazy">
+                            </a>
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="cell preview-cell">
+                        <a class="preview-link" href="${escapeHtml(href)}" target="_blank" rel="noreferrer" title="打开文件">
+                            <span class="file-icon ${fileIconClass(row.file)}">${fileIconText(row.file)}</span>
+                        </a>
+                    </div>
+                `;
+            }
+
+            if (definition.key === "current_file_name") {
+                const fullName = safeText(value);
+                const compactName = truncateFilenameMiddle(fullName);
+                return `
+                    <div class="cell">
+                        <div class="name-cell">
+                            <div class="file-main">
+                                <div class="file-name" title="${escapeHtml(fullName)}">${escapeHtml(compactName)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (definition.type === "text") {
+                return `<div class="cell text-cell" title="${escapeHtml(safeText(value))}">${escapeHtml(value)}</div>`;
+            }
+
+            if (definition.type === "kind_text") {
+                const displayValue = kindLabel(value);
+                return `<div class="cell text-cell" title="${escapeHtml(displayValue)}">${escapeHtml(displayValue)}</div>`;
+            }
+
+            if (definition.type === "reference_array") {
+                if (!value.length) return `<div class="cell muted">—</div>`;
+                const joined = value.map(item => item.label).join(" · ");
+                return `
+                    <div class="cell text-cell" title="${escapeHtml(joined)}">${escapeHtml(joined)}</div>
+                `;
+            }
+
+            if (definition.type === "string_array") {
+                if (!value.length) return `<div class="cell muted">—</div>`;
+                const joined = value.join(" | ");
+                return `
+                    <div class="cell text-cell" title="${escapeHtml(joined)}">${escapeHtml(joined)}</div>
+                `;
+            }
+
+            if (definition.type === "metric_text") {
+                const displayValue = value === null || value === undefined || value === "" ? "" : String(value);
+                return `<div class="cell metric-cell" title="${escapeHtml(displayValue)}">${escapeHtml(displayValue)}</div>`;
+            }
+
+            if (definition.type === "metric_money") {
+                const displayValue = isFiniteNumber(value) ? formatMoney(value) : "";
+                return `<div class="cell metric-cell" title="${escapeHtml(displayValue)}">${escapeHtml(displayValue)}</div>`;
+            }
+
+            return `<div class="cell muted">—</div>`;
+        }
+
+        function truncateFilenameMiddle(fileName, maxLength = 14) {
+            if (!fileName || fileName.length <= maxLength) return fileName;
+
+            const lastDotIndex = fileName.lastIndexOf(".");
+            if (lastDotIndex <= 0 || lastDotIndex === fileName.length - 1) {
+                return `${fileName.slice(0, maxLength - 2)}..`;
+            }
+
+            const extension = fileName.slice(lastDotIndex);
+            const baseName = fileName.slice(0, lastDotIndex);
+            const remaining = maxLength - extension.length - 2;
+
+            if (remaining <= 3) {
+                return `${fileName.slice(0, maxLength - 2)}..`;
+            }
+
+            return `${baseName.slice(0, remaining)}..${extension}`;
+        }
+
+        if (window.REIMBURSEMENT_DB) {
+            loadData(window.REIMBURSEMENT_DB, "自动读取 data.js");
+        } else {
+            renderError("未找到 data.js，请手动打开数据库文件。");
+        }
+    </script>
+</body>
+</html>
